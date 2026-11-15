@@ -67,6 +67,7 @@ describe("geoCountry", () => {
   it("routes US territories to their own GeoNames country code", () => {
     expect(geoCountry("US", "Puerto Rico (PR)")).toBe("PR");
     expect(geoCountry("US", "Virgin Islands")).toBe("VI");
+    expect(geoCountry("US", "PR")).toBe("PR");
     expect(geoCountry("US", "NJ")).toBe("US");
     expect(geoCountry(null, null)).toBeNull();
   });

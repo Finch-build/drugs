@@ -59,9 +59,9 @@ function lookupName(table: Map<string, LatLon>, country: string, name: string | 
 }
 
 const US_TERRITORIES: Array<[RegExp, string]> = [
-  [/puerto rico|\(PR\)/i, "PR"],
-  [/virgin islands|\(VI\)/i, "VI"],
-  [/\bguam\b|\(GU\)/i, "GU"],
+  [/puerto rico|\(PR\)|^PR$/i, "PR"],
+  [/virgin islands|\(VI\)|^VI$/i, "VI"],
+  [/\bguam\b|\(GU\)|^GU$/i, "GU"],
 ];
 
 export function geoCountry(country: string | null, state: string | null): string | null {
