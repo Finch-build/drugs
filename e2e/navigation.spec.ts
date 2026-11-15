@@ -1,4 +1,9 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+async function openMenuIfCollapsed(page: Page) {
+  const menu = page.getByRole("button", { name: /menu/i });
+  if (await menu.isVisible()) await menu.click();
+}
 
 test("skip link moves focus to main content", async ({ page, isMobile }) => {
   test.skip(isMobile, "keyboard flow is desktop-only");
@@ -10,9 +15,9 @@ test("skip link moves focus to main content", async ({ page, isMobile }) => {
   await expect(page.locator("main")).toBeFocused();
 });
 
-test("theme toggle switches to ASCII mode and persists across reloads", async ({ page, isMobile }) => {
+test("theme toggle switches to ASCII mode and persists across reloads", async ({ page }) => {
   await page.goto("#/about");
-  if (isMobile) await page.getByRole("button", { name: /menu/i }).click();
+  await openMenuIfCollapsed(page);
   const toggle = page.getByRole("button", { name: /ascii mode/i });
   await toggle.click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "ascii");
@@ -20,7 +25,7 @@ test("theme toggle switches to ASCII mode and persists across reloads", async ({
   await expect(page.locator("html")).toHaveAttribute("data-theme", "ascii");
 });
 
-test("primary navigation reaches every section", async ({ page, isMobile }) => {
+test("primary navigation reaches every section", async ({ page }) => {
   await page.goto("#/");
   for (const [label, url] of [
     ["Find My Drug", /guided-search/],
@@ -29,7 +34,7 @@ test("primary navigation reaches every section", async ({ page, isMobile }) => {
     ["About", /about/],
     ["Mission Control", /#\/$/],
   ] as const) {
-    if (isMobile) await page.getByRole("button", { name: /menu/i }).click();
+    await openMenuIfCollapsed(page);
     await page.getByRole("navigation", { name: /primary/i }).getByRole("link", { name: label, exact: true }).click();
     await expect(page).toHaveURL(url);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
