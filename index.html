@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en" data-theme="standard">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Mission Control for ProPublica's Rx Inspector data: find where your generic prescription drug was made and see FDA inspection history for every factory on a live globe." />
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23000'/%3E%3Cpath d='M4 16h24M16 2a20 20 0 0 1 0 28M16 2a20 20 0 0 0 0 28' stroke='%23fff' stroke-width='2' fill='none'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;600;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <title>Rx Mission Control</title>
+    <script>
+      try {
+        var saved = localStorage.getItem("rx-theme");
+        if (saved === "ascii" || saved === "standard") document.documentElement.dataset.theme = saved;
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
