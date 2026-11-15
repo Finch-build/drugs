@@ -113,6 +113,16 @@ export function cleanCountry(value: string | null | undefined): string {
   return (value ?? "Unknown").replace(/\s*\([A-Z]{3}\)\s*$/, "").trim() || "Unknown";
 }
 
+const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
+
+export function countryName(code: string | null | undefined, fallback: string | null | undefined): string {
+  if (code && /^[A-Z]{2}$/.test(code)) {
+    const name = regionNames.of(code);
+    if (name && name !== code && !/unknown/i.test(name)) return name;
+  }
+  return cleanCountry(fallback);
+}
+
 export function toLabel(raw: RawLabel): Label {
   return {
     id: raw.id,
@@ -198,7 +208,7 @@ export function toFacilityDetail(raw: RawFacilityDetail, geocode: Geocode): Faci
     registrant: raw.registrant,
     city: primary.city ?? null,
     state: primary.state ?? null,
-    country: cleanCountry(primary.country),
+    country: countryName(countryCode, primary.country),
     countryCode,
     lat: geo ? round(geo.lat) : null,
     lon: geo ? round(geo.lon) : null,
@@ -227,7 +237,7 @@ export function toFacilityDetail(raw: RawFacilityDetail, geocode: Geocode): Faci
       line2: f.address_line_2 ?? null,
       city: f.city ?? null,
       state: f.state ?? null,
-      country: f.country ? cleanCountry(f.country) : null,
+      country: f.country ? countryName(f.country_alpha2, f.country) : null,
       zip: f.zip_or_num ?? null,
       duns: f.duns ?? null,
       operations: (f.operations ?? "").split(";").map((s) => s.trim()).filter(Boolean),

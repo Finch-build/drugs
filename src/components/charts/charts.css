@@ -1,0 +1,255 @@
+.chart {
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.chart__caption {
+  display: grid;
+  gap: var(--space-1);
+}
+.chart__title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+[data-theme="ascii"] .chart__title::before {
+  content: "# ";
+  color: var(--accent-2);
+}
+.chart__takeaway {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+.chart__body {
+  width: 100%;
+  min-width: 0;
+}
+.chart__plot {
+  position: relative;
+}
+.chart__plot svg,
+.donut__svg,
+.sparkline {
+  display: block;
+  overflow: visible;
+}
+.chart-text {
+  fill: var(--text);
+  font-size: 12px;
+  font-family: var(--font-body);
+}
+.chart-text--axis {
+  fill: var(--muted);
+  font-size: 11px;
+}
+.chart-text--value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.chart-text--small {
+  font-size: 10px;
+}
+.chart-grid {
+  stroke: var(--border);
+  stroke-dasharray: 2 3;
+}
+.chart-axis {
+  stroke: var(--muted);
+}
+.bar {
+  transition: opacity 0.2s ease;
+}
+.chart--animate.bars--h .bar {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: bar-grow-x 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.chart--animate.bars--v .bar {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: bar-grow-y 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.chart--animate .donut__arc {
+  transform-origin: 0 0;
+  animation: donut-in 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes bar-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes bar-grow-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+@keyframes donut-in {
+  from {
+    transform: scale(0.7) rotate(-30deg);
+    opacity: 0;
+  }
+}
+.marks {
+  position: absolute;
+  inset: 0 auto auto 0;
+}
+.marks__target {
+  position: absolute;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.marks__target:hover,
+.marks__target.is-active {
+  background: color-mix(in srgb, var(--text) 7%, transparent);
+}
+.marks__target:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 1px;
+}
+.chart-tooltip {
+  position: absolute;
+  z-index: 5;
+  display: grid;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  background: var(--text);
+  color: var(--bg);
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  line-height: 1.3;
+  pointer-events: none;
+  box-shadow: var(--shadow);
+  animation: tip-in 0.15s ease both;
+}
+[data-theme="ascii"] .chart-tooltip {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px dashed var(--accent);
+}
+.chart-tooltip--above {
+  transform: translateY(calc(-100% - 8px));
+}
+.chart-tooltip--below {
+  transform: translateY(8px);
+}
+.chart-tooltip__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+@keyframes tip-in {
+  from {
+    opacity: 0;
+  }
+}
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+}
+.chart-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.chart-legend__swatch {
+  display: inline-block;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border: 1px solid;
+  border-radius: 2px;
+}
+.chart__table-toggle {
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  background: transparent;
+  color: var(--link);
+  border: 1px var(--border-style) var(--border);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.chart__table-toggle:hover {
+  border-color: var(--link);
+}
+.chart__table {
+  overflow-x: auto;
+  max-height: 420px;
+  overflow-y: auto;
+  font-size: 0.9rem;
+}
+.donut {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+.donut__arc {
+  stroke: var(--bg);
+  stroke-width: 1;
+  transition: opacity 0.2s ease;
+}
+.donut__arc.is-dimmed {
+  opacity: 0.35;
+}
+.donut__total {
+  fill: var(--text);
+  font-family: var(--font-heading);
+  font-size: 26px;
+  font-weight: 800;
+}
+.donut__legend {
+  flex: 1 1 200px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 2px;
+}
+.donut__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-1) var(--space-2);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius);
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.donut__item:hover,
+.donut__item.is-active {
+  background: var(--surface-2);
+}
+.donut__label {
+  flex: 1;
+  min-width: 0;
+}
+.donut__value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.sparkline__line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}

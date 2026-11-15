@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildInsights, deriveStatus, parseJsonList, toFacilityDetail, toLabel, type RawFacilityDetail, type RawLabel } from "./transform";
+import { buildInsights, countryName, deriveStatus, parseJsonList, toFacilityDetail, toLabel, type RawFacilityDetail, type RawLabel } from "./transform";
 
 const rawLabel: RawLabel = {
   id: 88,
@@ -167,5 +167,14 @@ describe("buildInsights", () => {
     expect(insights.topCitations[0]).toEqual({ key: "21 CFR 211.68(a)", label: "Calibration not done", count: 1 });
     expect(insights.topLabelers[0]).toEqual({ key: "Preferred Pharmaceuticals", label: "Preferred Pharmaceuticals", count: 1 });
     expect(insights.forms[0].key).toBe("TABLET");
+  });
+});
+
+describe("countryName", () => {
+  it("names countries consistently from their ISO code", () => {
+    expect(countryName("IT", "ITA")).toBe("Italy");
+    expect(countryName("US", "United States (USA)")).toBe("United States");
+    expect(countryName(null, "India (IND)")).toBe("India");
+    expect(countryName("ZZ", "Atlantis")).toBe("Atlantis");
   });
 });
