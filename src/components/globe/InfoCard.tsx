@@ -15,7 +15,16 @@ export function InfoCard({ facility, onClose }: { facility: FacilitySummary; onC
   ];
 
   return (
-    <article className="globe-card card" aria-labelledby={`globe-card-${facility.fei}`}>
+    <article
+      className="globe-card card"
+      aria-labelledby={`globe-card-${facility.fei}`}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          event.stopPropagation();
+          onClose();
+        }
+      }}
+    >
       <div className="globe-card__head">
         <h3 id={`globe-card-${facility.fei}`} className="globe-card__title">
           {facility.name}
@@ -25,8 +34,10 @@ export function InfoCard({ facility, onClose }: { facility: FacilitySummary; onC
         </button>
       </div>
       <p className="globe-card__where">{formatLocation(facility) || "Location unknown"}</p>
-      <StatusBadge status={facility.status} />
-      {facility.lastActionDate && <p className="globe-card__date muted">Latest action {formatDate(facility.lastActionDate)}</p>}
+      <div className="globe-card__meta">
+        <StatusBadge status={facility.status} />
+        {facility.lastActionDate && <p className="globe-card__date muted">Latest action {formatDate(facility.lastActionDate)}</p>}
+      </div>
       <dl className="globe-card__stats">
         {stats.map(([term, value]) => (
           <div key={term} className={value > 0 && term !== "Drug labels" && term !== "Inspections" ? "is-notable" : undefined}>

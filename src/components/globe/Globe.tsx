@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
 import type { FacilitySummary } from "../../data/types";
 import { useTheme } from "../../theme/ThemeContext";
 import { useReducedMotion } from "../../theme/useReducedMotion";
@@ -51,6 +51,17 @@ export function Globe({ facilities, focusFei = null, onSelect, label = "Facility
   const rotation = useRef<Rotation>(INITIAL_ROTATION);
   const zoomRef = useRef(1);
   const size = useRef({ width: 0, height: 0, dpr: 1 });
+  // Shifts the globe up while a full-width card covers the bottom of the canvas (phones).
+  const shift = useRef({ current: 0, target: 0 });
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const updateShift = useRef(() => {});
+  updateShift.current = () => {
+    const card = viewportRef.current?.querySelector<HTMLElement>(".globe-card");
+    const { width, height } = size.current;
+    // Only a card spanning most of the width hides the centre; a corner card leaves it clear.
+    const covering = card && width > 0 && card.offsetWidth > width * 0.7;
+    shift.current.target = covering ? Math.min(0, card.offsetTop / 2 - height / 2) : 0;
+  };
   const flight = useRef<Flight | null>(null);
   const interaction = useRef({ hover: false, drag: false, focus: false });
   const visible = useRef({ onscreen: true, page: true });
@@ -82,6 +93,7 @@ export function Globe({ facilities, focusFei = null, onSelect, label = "Facility
       selectedFei: s.selectedFei,
       time,
       pulse: !s.reduced,
+      centerY: size.current.height / 2 + shift.current.current,
     };
     if (s.theme === "ascii") {
       ascii.current ??= createAsciiBuffer();
@@ -105,8 +117,11 @@ export function Globe({ facilities, focusFei = null, onSelect, label = "Facility
       } else if (autoRotating()) {
         rotation.current = [rotation.current[0] + dt * DEGREES_PER_MS, rotation.current[1]];
       }
+      const sh = shift.current;
+      const shifting = Math.abs(sh.target - sh.current) > 0.5;
+      sh.current = shifting && !live.current.reduced ? sh.current + (sh.target - sh.current) * Math.min(1, dt / 90) : sh.target;
       const drawn = draw(time);
-      const shouldContinue = drawn && visible.current.onscreen && visible.current.page && (flight.current !== null || !live.current.reduced);
+      const shouldContinue = drawn && visible.current.onscreen && visible.current.page && (flight.current !== null || shifting || !live.current.reduced);
       if (shouldContinue) frame.current = requestAnimationFrame(tick);
       else lastTime.current = 0;
     },
@@ -138,12 +153,16 @@ export function Globe({ facilities, focusFei = null, onSelect, label = "Facility
     if (!stage || !canvas) return;
     const resize = (width: number) => {
       const w = Math.max(200, Math.round(width));
-      const h = Math.round(Math.min(w, 620, Math.max(300, window.innerHeight * 0.72)));
+      // Phones get a taller canvas so the on-globe card leaves room for the globe above it.
+      const h = Math.round(
+        w < 600 ? Math.max(Math.min(w, 620), Math.min(600, window.innerHeight * 0.7)) : Math.min(w, 620, Math.max(300, window.innerHeight * 0.72)),
+      );
       const dpr = Math.min(2.5, window.devicePixelRatio || 1);
       size.current = { width: w, height: h, dpr };
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
       canvas.style.height = `${h}px`;
+      updateShift.current();
       requestFrame();
     };
     resize(stage.getBoundingClientRect().width || 600);
@@ -218,6 +237,11 @@ export function Globe({ facilities, focusFei = null, onSelect, label = "Facility
     [byFei, flyTo, onSelect],
   );
 
+  useLayoutEffect(() => {
+    updateShift.current();
+    requestFrame();
+  }, [selectedFei, requestFrame]);
+
   useEffect(() => {
     if (focusFei && byFei.has(focusFei)) select(focusFei, true);
   }, [focusFei, byFei, select]);
@@ -276,7 +300,8 @@ export function Globe({ facilities, focusFei = null, onSelect, label = "Facility
       const point = localPoint(event);
       const tolerance = event.pointerType === "touch" ? 24 : 14;
       const fei = pickNearest(picks.current, point.x, point.y, tolerance);
-      select(fei, false);
+      // Fly the tapped dot to the centre so the on-globe card never covers it.
+      select(fei, true);
     }
     pointers.current.delete(event.pointerId);
     if (pointers.current.size === 0) {
@@ -341,10 +366,22 @@ export function Globe({ facilities, focusFei = null, onSelect, label = "Facility
   const canvasLabel = `Globe showing ${plural(shownPoints.length, "facility", "facilities")} in ${plural(countries, "country", "countries")}, ${formatNumber(serious)} with a serious latest action. ${motionState}.`;
   const selected = selectedFei ? byFei.get(selectedFei) ?? null : null;
 
+  const closeCard = () => {
+    select(null, false);
+    canvasRef.current?.focus({ preventScroll: true });
+  };
+
+  // On narrow screens the browser sits below the globe, so bring the card into view.
+  const pickFromBrowser = (fei: string) => {
+    select(fei, true);
+    stageRef.current?.scrollIntoView?.({ block: "nearest", behavior: reduced ? "auto" : "smooth" });
+  };
+
   return (
     <div className={`globe ${theme === "ascii" ? "globe--ascii" : ""} ${className}`}>
       <div className="globe__layout">
         <div className="globe__stage" ref={stageRef}>
+          <div className="globe__viewport" ref={viewportRef}>
           <canvas
             ref={canvasRef}
             className="globe__canvas"
@@ -362,6 +399,8 @@ export function Globe({ facilities, focusFei = null, onSelect, label = "Facility
             onBlur={() => setInteraction("focus", false)}
             onKeyDown={onKeyDown}
           />
+          {selected && <InfoCard key={selected.fei} facility={selected} onClose={() => closeCard()} />}
+          </div>
           <div className="globe__controls" role="group" aria-label="Globe controls">
             <button type="button" className="globe__control globe__control--wide" aria-pressed={!playing} onClick={() => setPlaying((p) => !p)}>
               <span aria-hidden="true">{playing ? "❚❚" : "▶"}</span> Pause rotation
@@ -392,12 +431,8 @@ export function Globe({ facilities, focusFei = null, onSelect, label = "Facility
               ))}
             </div>
           </fieldset>
-          {selected ? (
-            <InfoCard key={selected.fei} facility={selected} onClose={() => select(null, false)} />
-          ) : (
-            <p className="globe__hint muted">Select a dot or use the facility browser below to see inspection details.</p>
-          )}
-          <FacilityBrowser facilities={facilities} selectedFei={selectedFei} onPick={(fei) => select(fei, true)} />
+          {!selected && <p className="globe__hint muted">Select a dot or use the facility browser below to see inspection details.</p>}
+          <FacilityBrowser facilities={facilities} selectedFei={selectedFei} onPick={pickFromBrowser} />
         </div>
       </div>
       <div className="visually-hidden" aria-live="polite" role="status" aria-label={`${label} announcements`}>

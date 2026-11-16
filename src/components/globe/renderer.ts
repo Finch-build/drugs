@@ -87,13 +87,15 @@ export interface Scene {
   selectedFei: string | null;
   time: number;
   pulse: boolean;
+  /** Vertical centre of the globe in CSS pixels; defaults to the middle of the canvas. */
+  centerY?: number;
 }
 
-export function makeProjection(scene: Pick<Scene, "width" | "height" | "rotation" | "zoom">): GeoProjection {
+export function makeProjection(scene: Pick<Scene, "width" | "height" | "rotation" | "zoom" | "centerY">): GeoProjection {
   const base = Math.max(40, Math.min(scene.width, scene.height) / 2 - 10);
   return geoOrthographic()
     .clipAngle(90)
-    .translate([scene.width / 2, scene.height / 2])
+    .translate([scene.width / 2, scene.centerY ?? scene.height / 2])
     .scale(base * scene.zoom)
     .rotate([scene.rotation[0], scene.rotation[1], 0])
     .precision(0.5);
@@ -238,8 +240,7 @@ export function drawAscii(ctx: CanvasRenderingContext2D, buffer: AsciiBuffer, sc
   b.clearRect(0, 0, cols, rows);
   b.setTransform(1 / cellWidth, 0, 0, 1 / cellHeight, -offsetX / cellWidth, -offsetY / cellHeight);
   const path = geoPath(projection, b);
-  const cx = scene.width / 2;
-  const cy = scene.height / 2;
+  const [cx, cy] = projection.translate();
   const r = projection.scale();
   const light = b.createRadialGradient(cx - r * 0.35, cy - r * 0.4, r * 0.05, cx, cy, r * 1.05);
   light.addColorStop(0, "rgb(0,255,0)");
