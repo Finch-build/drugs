@@ -67,8 +67,8 @@ relative asset paths and hash routing, so it works under any Pages path.
 
 ## Credits and license
 
-ProPublica’s data is licensed [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/): noncommercial use only,
-with attribution to ProPublica and a link to [Rx Inspector](https://projects.propublica.org/rx-inspector/). This project
+The source code is released under the [MIT License](LICENSE). The data is not. ProPublica’s data is licensed [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/), which allows
+noncommercial use only, with attribution to ProPublica and a link to [Rx Inspector](https://projects.propublica.org/rx-inspector/). This project
 is noncommercial.
 
 All data and reporting come from ProPublica’s Rx Inspector, by Brandon Roberts, Ruth Talbot and Nick McMillan. Read the
