@@ -3,11 +3,13 @@ import { join } from "node:path";
 import type { Meta } from "../src/data/types";
 import { loadGazetteer } from "./lib/gazetteer";
 import { createGeocoder, geoCountry } from "./lib/geocode";
+import { applyReleaseLinks, parseReleaseLinks } from "./lib/release";
 import { buildInsights, toFacilityDetail, toLabel, type RawFacilityDetail, type RawLabel } from "./lib/transform";
 
 const RAW = process.env.SNAPSHOT ?? "data/raw/snapshot.json";
 const GEO_DIR = "data/geo";
 const OUT = "public/data";
+const RELEASE_CSV = "data/propublica/ndc_fei.csv";
 
 interface Snapshot {
   crawledAt: string;
@@ -25,7 +27,8 @@ async function main() {
   );
   const geocode = createGeocoder(await loadGazetteer(GEO_DIR, countryCodes));
 
-  const labels = snapshot.labels.map(toLabel).sort((a, b) => a.id - b.id);
+  const releaseLinks = parseReleaseLinks(readFileSync(RELEASE_CSV, "utf8"));
+  const labels = applyReleaseLinks(snapshot.labels.map(toLabel), releaseLinks).sort((a, b) => a.id - b.id);
   const details = snapshot.facilities.map((f) => toFacilityDetail(f, geocode)).sort((a, b) => a.summary.fei.localeCompare(b.summary.fei));
   const insights = buildInsights(details, labels);
 

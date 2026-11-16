@@ -21,6 +21,7 @@ const label = (overrides: Partial<Label>): Label => ({
   ndcs: ["0093-5056-98", "0093-5056-19"],
   repackNdc: null,
   feis: ["111"],
+  apiFeis: [],
   colors: ["white"],
   colorsLong: [],
   shapes: ["OVAL"],

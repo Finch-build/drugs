@@ -32,6 +32,14 @@ describe("About", () => {
     expect(screen.getByText(/precision varies/i)).toBeInTheDocument();
   });
 
+  it("credits ProPublica's public data release and its noncommercial license", async () => {
+    renderAt(<About />, { route: "/about" });
+    await screen.findByText("37,353");
+    expect(screen.getByRole("link", { name: /rx-inspector-data/i })).toHaveAttribute("href", "https://github.com/propublica/rx-inspector-data");
+    expect(screen.getByRole("link", { name: /CC BY-NC 4\.0/ })).toHaveAttribute("href", "https://creativecommons.org/licenses/by-nc/4.0/");
+    expect(screen.getByText(/noncommercial/i)).toBeInTheDocument();
+  });
+
   it("has no detectable accessibility violations", async () => {
     const { container } = renderAt(<About />, { route: "/about" });
     await screen.findByText("37,353");

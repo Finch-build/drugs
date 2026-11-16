@@ -21,6 +21,7 @@ export interface Label {
   ndcs: string[];
   repackNdc: string | null;
   feis: string[];
+  apiFeis: string[];
   colors: string[];
   colorsLong: string[];
   shapes: string[];

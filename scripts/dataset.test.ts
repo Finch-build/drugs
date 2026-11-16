@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { parseReleaseLinks } from "./lib/release";
 import type { FacilityDetail, FacilitySummary, Insights, Label, Meta } from "../src/data/types";
 
 const DATA = "public/data";
@@ -31,7 +32,28 @@ describe.runIf(existsSync(join(DATA, "meta.json")))("built dataset", () => {
   it("links almost every facility-matched label to a crawled facility", () => {
     const referenced = labels.flatMap((l) => l.feis);
     const resolved = referenced.filter((fei) => feis.has(fei)).length;
-    expect(resolved / referenced.length).toBeGreaterThan(0.98);
+    expect(resolved / referenced.length).toBeGreaterThan(0.999);
+  });
+
+  it("contains every drug → facility link from ProPublica's public data release", () => {
+    const release = parseReleaseLinks(readFileSync("data/propublica/ndc_fei.csv", "utf8"));
+    const labelsByNdc = new Map<string, Label[]>();
+    for (const label of labels) labelsByNdc.set(label.productNdc ?? "", [...(labelsByNdc.get(label.productNdc ?? "") ?? []), label]);
+    const missingLinks: string[] = [];
+    const missingFacilities = new Set<string>();
+    let matchedNdcs = 0;
+    for (const [ndc, links] of release) {
+      const matches = labelsByNdc.get(ndc);
+      if (matches) matchedNdcs++;
+      for (const link of links) {
+        if (!feis.has(link.fei)) missingFacilities.add(link.fei);
+        if (matches && !matches.every((l) => l.feis.includes(link.fei))) missingLinks.push(`${ndc}→${link.fei}`);
+        if (matches && link.api && !matches.every((l) => l.apiFeis.includes(link.fei))) missingLinks.push(`api ${ndc}→${link.fei}`);
+      }
+    }
+    expect([...missingFacilities]).toEqual([]);
+    expect(missingLinks).toEqual([]);
+    expect(matchedNdcs / release.size).toBeGreaterThan(0.995);
   });
 
   it("geocodes nearly every facility, mostly at postal or city precision", () => {

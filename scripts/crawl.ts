@@ -3,9 +3,11 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { nodeData } from "./lib/devalue";
 import { createLimiter, ingredientQueries, searchPages, splitList, SEARCH_CAP } from "./lib/queue";
+import { parseReleaseLinks, releaseFeis } from "./lib/release";
 
 const ORIGIN = "https://projects.propublica.org/rx-inspector";
 const RAW_DIR = "data/raw";
+const RELEASE_CSV = "data/propublica/ndc_fei.csv";
 const CACHE_DIR = join(RAW_DIR, "http");
 const PAGE_SIZE = 12;
 const CONCURRENCY = Number(process.env.CRAWL_CONCURRENCY ?? 4);
@@ -159,6 +161,9 @@ async function main() {
   const pending: Promise<unknown>[] = [];
   for (const drug of SEED_DRUGS) queueSearch(`name=${encodeURIComponent(drug)}`, pending);
   for (const term of SEED_FACILITY_TERMS) queueFacilitySearch(term, pending);
+  if (existsSync(RELEASE_CSV)) {
+    for (const fei of releaseFeis(parseReleaseLinks(readFileSync(RELEASE_CSV, "utf8")))) queueFacility(fei, pending);
+  }
   await drain(pending);
 
   const snapshot = {

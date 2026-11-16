@@ -62,6 +62,7 @@ function LabelProduct({ labels, facilities, documentId, ndc }: LabelProductProps
   const unique = (values: Array<string | null>) => [...new Set(values.filter((v): v is string => Boolean(v)))];
   const packageNdcs = unique(products.flatMap((p) => p.ndcs));
   const feis = unique(products.flatMap((p) => p.feis));
+  const apiFeis = new Set(products.flatMap((p) => p.apiFeis ?? []));
   const byFei = new Map(facilities.map((f) => [f.fei, f]));
   const repack = isRepackaged(label);
   const repackNdcs = unique(products.map((p) => p.repackNdc));
@@ -166,11 +167,17 @@ function LabelProduct({ labels, facilities, documentId, ndc }: LabelProductProps
                 According to ProPublica’s records, this drug is linked to {feis.length === 1 ? "one facility" : `${feis.length} facilities`}. Each card shows
                 the most recent FDA action.
               </p>
+              {apiFeis.size > 0 && (
+                <p className="muted">
+                  Facilities marked “Active ingredient (API) maker” were listed by the labeler as a facility that makes only the raw active ingredient, not the
+                  finished drug.
+                </p>
+              )}
               <div className="facility-card-list">
                 {feis.map((fei) => {
                   const facility = byFei.get(fei);
                   return facility ? (
-                    <FacilityCard key={fei} facility={facility} />
+                    <FacilityCard key={fei} facility={facility} activeIngredientOnly={apiFeis.has(fei)} />
                   ) : (
                     <article key={fei} className="facility-card card" aria-label={`Facility ${fei}`}>
                       <h3 className="facility-card__name">FEI {fei}</h3>

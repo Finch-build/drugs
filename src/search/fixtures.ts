@@ -20,6 +20,7 @@ export function makeLabel(overrides: Partial<Label> = {}): Label {
     ndcs: ["68382-028-01", "68382-028-10"],
     repackNdc: null,
     feis: ["3002809586"],
+    apiFeis: [],
     colors: ["white"],
     colorsLong: ["white to off-white"],
     shapes: ["ROUND"],
@@ -50,6 +51,7 @@ export const fixtureLabels: Label[] = [
     productNdc: "11111-222",
     ndcs: ["11111-222-33"],
     feis: [],
+    apiFeis: [],
     colors: ["blue"],
     authorizedGeneric: true,
   }),
@@ -63,6 +65,7 @@ export const fixtureLabels: Label[] = [
     productNdc: "82009-002",
     ndcs: ["82009-002-90"],
     feis: ["3003157498"],
+    apiFeis: [],
     imprints: ["A 20"],
   }),
 ];

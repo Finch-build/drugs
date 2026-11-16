@@ -143,6 +143,7 @@ export function toLabel(raw: RawLabel): Label {
     ndcs: splitList(raw.ndcs),
     repackNdc: raw.repack_ndc,
     feis: splitList(raw.feis),
+    apiFeis: [],
     colors: parseJsonList(raw.color_short),
     colorsLong: parseJsonList(raw.color_long),
     shapes: parseJsonList(raw.shape),

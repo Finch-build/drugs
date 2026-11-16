@@ -32,7 +32,13 @@ export function FacilityStats({ facility }: { facility: FacilitySummary }) {
   );
 }
 
-export function FacilityCard({ facility, headingLevel = 3 }: { facility: FacilitySummary; headingLevel?: 2 | 3 | 4 }) {
+interface FacilityCardProps {
+  facility: FacilitySummary;
+  headingLevel?: 2 | 3 | 4;
+  activeIngredientOnly?: boolean;
+}
+
+export function FacilityCard({ facility, headingLevel = 3, activeIngredientOnly = false }: FacilityCardProps) {
   const Heading = `h${headingLevel}` as "h2" | "h3" | "h4";
   const headingId = `facility-${facility.fei}`;
   return (
@@ -46,6 +52,7 @@ export function FacilityCard({ facility, headingLevel = 3 }: { facility: Facilit
       <p className="facility-card__status">
         <StatusBadge status={facility.status} />
         {facility.seriousHistory && <span className="badge tone-bad">Serious finding in history</span>}
+        {activeIngredientOnly && <span className="badge tone-neutral">Active ingredient (API) maker</span>}
       </p>
       <p className="facility-card__date muted">Last inspection: {formatDate(facility.lastInspectionDate)}</p>
       <FacilityStats facility={facility} />

@@ -172,6 +172,12 @@ export default function About() {
           <li>
             Data and reporting: <a href={SOURCE.url}>{SOURCE.name}</a> by {SOURCE.authors}, ProPublica.
           </li>
+          <li>
+            Drug → facility links: ProPublica’s public data release,{" "}
+            <a href="https://github.com/propublica/rx-inspector-data">propublica/rx-inspector-data</a>, used under the{" "}
+            <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a> license. This is a noncommercial project; inspection
+            histories and label details come from a snapshot of the Rx Inspector site.
+          </li>
           <li>ASCII rendering: ascii.rest by @bas3line (MIT License).</li>
           <li>
             Geocoding: <a href="https://www.geonames.org/">GeoNames</a>, licensed under CC BY 4.0.

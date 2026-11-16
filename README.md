@@ -34,18 +34,26 @@ npm run verify       # all of the above
 
 ## Data pipeline
 
-The data in `public/data/` is a snapshot. ProPublica serves Rx Inspector from a server and offers no CORS, so a static
-site cannot query it live.
+The data in `public/data/` combines two ProPublica sources:
+
+1. **[propublica/rx-inspector-data](https://github.com/propublica/rx-inspector-data)**, ProPublica’s public release that
+   links product NDCs to facility FEIs. A copy is vendored in `data/propublica/ndc_fei.csv` and is the authoritative
+   source for which facilities make which drug, including which facilities make only the active ingredient (API).
+2. **A snapshot of the Rx Inspector site** for everything the release leaves out: inspections and citations, Form 483s,
+   warning letters, import alerts, facility addresses and label details such as pill color, shape and imprint. The site
+   offers no CORS, so a static app cannot query it live.
 
 ```sh
 npm run crawl        # polite, resumable crawl of Rx Inspector into data/raw/ (HTTP responses are cached)
 npm run build:data   # normalize + geocode into public/data/
 ```
 
-- `scripts/crawl.ts` runs a breadth-first search. It seeds from common drugs and facility terms, then expands through
-  every ingredient, labeler and facility it finds until no new ones turn up.
+- `scripts/crawl.ts` runs a breadth-first search. It seeds from common drugs, facility terms and every FEI in the public
+  release, then expands through every ingredient, labeler and facility it finds until no new ones turn up.
 - `scripts/lib/geocode.ts` places each facility offline using [GeoNames](https://www.geonames.org/) (CC BY 4.0). It tries
   the postal code first, then the city, the region and finally the country. Each facility records the precision used.
+- `scripts/lib/release.ts` merges the release’s links into the labels. `scripts/dataset.test.ts` checks that every link in
+  the release appears in the built data.
 - `scripts/build-data.ts` writes `meta.json`, `facilities.json`, `labels.json`, `insights.json` and one
   `facilities/{FEI}.json` file per facility. The shared contract is in `src/data/types.ts`.
 
@@ -57,7 +65,11 @@ To refresh, download the GeoNames files listed in `scripts/lib/gazetteer.ts` int
 GitHub Pages on every push to `main`. Turn it on under **Settings → Pages → Source: GitHub Actions**. The build uses
 relative asset paths and hash routing, so it works under any Pages path.
 
-## Credits
+## Credits and license
+
+ProPublica’s data is licensed [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/): noncommercial use only,
+with attribution to ProPublica and a link to [Rx Inspector](https://projects.propublica.org/rx-inspector/). This project
+is noncommercial.
 
 All data and reporting come from ProPublica’s Rx Inspector, by Brandon Roberts, Ruth Talbot and Nick McMillan. Read the
 [methodology](https://www.propublica.org/article/rx-inspector-fda-generic-drug-tool-methodology). This is an independent

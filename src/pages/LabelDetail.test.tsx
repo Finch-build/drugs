@@ -1,6 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import { axe } from "vitest-axe";
 import { clearDataCache } from "../data/api";
+import type { Label } from "../data/types";
 import { fixtureData } from "../search/fixtures";
 import { mockFetchData, renderAt } from "../test-utils";
 import LabelDetail from "./LabelDetail";
@@ -38,6 +39,18 @@ describe("LabelDetail", () => {
     expect(within(card).getByRole("link", { name: /^sun pharmaceutical industries limited$/i })).toHaveAttribute("href", "/facilities/3002809586");
     expect(within(card).getByRole("link", { name: /show on globe/i })).toHaveAttribute("href", "/?fei=3002809586");
     expect(within(card).getByText(/warning letters/i).closest("div")).toHaveTextContent("1");
+  });
+
+  it("marks facilities that make only the active ingredient", async () => {
+    const labels = (fixtureData["labels.json"] as Label[]).map((label) =>
+      label.productNdc === "68382-028" ? { ...label, apiFeis: ["3002809586"] } : label,
+    );
+    mockFetchData({ ...fixtureData, "labels.json": labels });
+    detail("/labels/doc-metformin-zydus/68382-028");
+    const section = await screen.findByRole("region", { name: /facilities that make this drug/i });
+    const card = within(section).getByRole("article", { name: /sun pharmaceutical/i });
+    expect(within(card).getByText(/active ingredient \(API\) maker/i)).toBeInTheDocument();
+    expect(within(section).getByText(/makes only the raw active ingredient/i)).toBeInTheDocument();
   });
 
   it("explains repackaged drugs and shows the source NDC", async () => {
